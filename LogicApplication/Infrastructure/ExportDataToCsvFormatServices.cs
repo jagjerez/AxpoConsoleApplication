@@ -18,7 +18,7 @@ namespace LogicApplication.Infrastructure
                     Delimiter = ";"
                 };
 
-                using var writer = new StreamWriter(Path.Combine(configuration.GetSection("Configuration:RouteFile").Value ?? throw new DomainException("You set RouteFile"), fileData.FileName));
+                using var writer = new StreamWriter(Path.Combine(configuration.GetSection("Configuration:RouteFile").Value ?? throw new DomainException("Not set RouteFile"), fileData.FileName));
                 using var csv = new CsvWriter(writer, config);
 
                 csv.WriteRecords(fileData.PowersByHour);

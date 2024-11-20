@@ -38,7 +38,7 @@ Console.CancelKeyPress += (sender, eventArgs) =>
 {
     Console.WriteLine("Cancellation requested...");
     cancellationTokenSource.Cancel();
-    eventArgs.Cancel = true; // Prevent immediate termination
+    eventArgs.Cancel = true;
 };
 
 try
@@ -61,31 +61,39 @@ async Task RunAsync(CancellationToken cancellationToken)
     var service = serviceProvider.GetRequiredService<CreateReportServices>();
     var cronExpression = configuration.GetSection("Configuration:Cron").Value;
     var cron = CronExpression.Parse(cronExpression);
+    var hasError = false;
+    DateTime? errorDateTime = null;
     while (!cancellationToken.IsCancellationRequested)
     {
-        var utc = DateTime.UtcNow;
-        var now = DateTime.Now;
-        var next = cron.GetNextOccurrence(utc);
+        var excuteDate = !hasError ? DateTime.UtcNow : errorDateTime;
         try
         {
+            if (!excuteDate.HasValue)
+            {
+                throw new ApplicationException("The application need an initial datetime.");
+            }
+            var next = cron.GetNextOccurrence(excuteDate.Value);
             if (next.HasValue)
             {
-                var nextOccurrence = next.Value.ToLocalTime();  // Convierte a la hora local si es necesario
+                var nextOccurrence = next.Value.ToLocalTime();
 
-                // Calcula el tiempo restante hasta la próxima ocurrencia
                 var timeToWait = nextOccurrence - DateTime.Now;
 
-                if (!init && timeToWait > TimeSpan.Zero)
+                if (!hasError && !init && timeToWait > TimeSpan.Zero)
                 {
-                    // Espera hasta la siguiente ejecución
                     await Task.Delay(timeToWait, cancellationToken);
                 }
-                await service.Execute(now, (FormatReport)Enum.Parse(typeof(FormatReport), csvType));
+                logger.LogInformation("Try execute.");
+                await service.Execute(excuteDate.Value.ToLocalTime(), (FormatReport)Enum.Parse(typeof(FormatReport), csvType));
                 init = false;
+                hasError = false;
+                logger.LogInformation("Finish execution.");
             }
         }
         catch (ApplicationException ex)
         {
+            errorDateTime = excuteDate;
+            hasError = true;
             logger.LogError(ex,ex.Message);
         }
     }

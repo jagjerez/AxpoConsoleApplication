@@ -17,20 +17,20 @@ namespace LogicApplication.Domain
         IExportDataToCsvFormatServices exportDataToCsvFormatServices,
         IConfiguration configuration) : IReportServices
     {
-        private readonly TimeZoneInfo GmtTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("GMT Standard Time");
-        private readonly TimeZoneInfo ApplicationTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(configuration.GetSection("Configuration:LocalTimeZone").Value ?? throw new DomainException("You set LocalTimeZone"));
+        private readonly TimeZoneInfo ApplicationTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(configuration.GetSection("Configuration:LocalTimeZone").Value ?? throw new DomainException("Not set LocalTimeZone"));
 
         public async Task<bool> CreateReport(DateTime executionTime, FormatReport formatReport)
         {
-            DateTime executionTimeDayAhead = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(executionTime.Year, executionTime.Month, executionTime.Day, executionTime.Hour, executionTime.Minute, executionTime.Second, DateTimeKind.Utc), ApplicationTimeZoneInfo);
-            var referenceDate = executionTimeDayAhead.AddDays(1);
-            var calculationDataWithLocalDatetime = (await calculationServices.CalculateData(referenceDate)).ToList();
-            var formatFile = configuration.GetSection("Configuration:FormatFileName").Value ?? throw new DomainException("You set FormatFileName");
+            DateTime utcDateTime = executionTime.ToUniversalTime();
+            DateTime applicationDatetime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, ApplicationTimeZoneInfo);
+            var referenceDate = applicationDatetime.AddDays(1);
+            var calculationDataWithLocalDatetime = (await calculationServices.CalculateData(applicationDatetime)).ToList();
+            var formatFile = configuration.GetSection("Configuration:FormatFileName").Value ?? throw new DomainException("Not set FormatFileName");
             var fileName = string.Format(
                                 formatFile,
                                 referenceDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture),
-                                executionTimeDayAhead.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
-            if (calculationDataWithLocalDatetime.Count() == 2)
+                                utcDateTime.ToString("yyyyMMddHHmm", CultureInfo.InvariantCulture));
+            if (calculationDataWithLocalDatetime.Count() <= 1)
             {
                 throw new DomainException("Error when call to external services, the calculate return data empty.");
             }
@@ -46,11 +46,12 @@ namespace LogicApplication.Domain
 
         private IFileData GetCalculateDataHourlyAggreate(CalculationData calculationDataDayAhead, CalculationData calculationDataInterDay, string fileName)
         {
-            DateTime dateTime = new DateTime(calculationDataDayAhead.DateTime.Year, calculationDataDayAhead.DateTime.Month, calculationDataDayAhead.DateTime.Day, 0, 0, 0, DateTimeKind.Unspecified);
+            DateTime utcDateTime = calculationDataDayAhead.DateTime.ToUniversalTime();
+            DateTime firtsTimeOfPeriodUtc = new DateTime(utcDateTime.Year, utcDateTime.Month, utcDateTime.Day, utcDateTime.Hour, 0, 0, DateTimeKind.Utc);
             return new FileReportData(fileName, calculationDataDayAhead.Periods.Select(r =>
             {
                 var interDayPeriod = calculationDataInterDay.Periods.First(x => x.Period == r.Period);
-                return new PowerByHour(dateTime.AddHours(r.Period), r.Volume + interDayPeriod.Volume);
+                return new PowerByHour(TimeZoneInfo.ConvertTimeFromUtc(firtsTimeOfPeriodUtc.AddHours(r.Period), ApplicationTimeZoneInfo), r.Volume + interDayPeriod.Volume);
             }));
         }
     }

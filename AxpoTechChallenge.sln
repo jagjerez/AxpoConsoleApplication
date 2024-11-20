@@ -9,11 +9,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementos de la solución",
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		ExternalDependencies\PowerService.dll = ExternalDependencies\PowerService.dll
+		README = README
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicApplication", "LogicApplication\LogicApplication.csproj", "{277908B6-C0BD-4E16-93A7-45BCF43C1B87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogicApplicationUnitTest", "LogicApplicationUnitTest\LogicApplicationUnitTest.csproj", "{A157E92C-25AD-4D0D-9A4E-DE6C95D85156}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogicApplicationFunctionalTest", "LogicApplicationFunctionalTest\LogicApplicationFunctionalTest.csproj", "{D96DE8C2-C36B-45A3-A6BB-3E5452E261E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +30,10 @@ Global
 		{277908B6-C0BD-4E16-93A7-45BCF43C1B87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{277908B6-C0BD-4E16-93A7-45BCF43C1B87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{277908B6-C0BD-4E16-93A7-45BCF43C1B87}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A157E92C-25AD-4D0D-9A4E-DE6C95D85156}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A157E92C-25AD-4D0D-9A4E-DE6C95D85156}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A157E92C-25AD-4D0D-9A4E-DE6C95D85156}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A157E92C-25AD-4D0D-9A4E-DE6C95D85156}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D96DE8C2-C36B-45A3-A6BB-3E5452E261E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D96DE8C2-C36B-45A3-A6BB-3E5452E261E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D96DE8C2-C36B-45A3-A6BB-3E5452E261E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D96DE8C2-C36B-45A3-A6BB-3E5452E261E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
